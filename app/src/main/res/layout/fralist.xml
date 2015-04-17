@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+        <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:id="@+id/LinOut"
+        >
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:text="Hollo"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="24dp"
+            android:id="@+id/TV01"/>
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="5"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:text="Weclome~"
+            android:textSize="20dp"
+            android:textColor="@android:color/holo_orange_dark"
+            android:id="@+id/TV02"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:text="www"
+            android:textSize="20dp"
+            android:textColor="@android:color/holo_blue_light"
+            android:id="@+id/TV03"/>
+        </LinearLayout>
+
+        </LinearLayout>
