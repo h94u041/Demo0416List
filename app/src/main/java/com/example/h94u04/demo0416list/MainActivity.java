@@ -215,7 +215,6 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 
         LV2.setAdapter(new AdtBase(context, list2));
 
-//
 //        for(int i = list2.size(); i < 0 ; i--) {
 //            for (int j =  list2.size() ; j < 0; j--) {
 //                if(list2.get(j-1) != null) {

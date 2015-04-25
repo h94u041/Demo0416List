@@ -52,6 +52,8 @@ public class AdtBase extends BaseAdapter {
 
             DataArray.get(position).tv03.setText(DataArray.get(position).price);
 
+            DataArray.get(position).position = position;
+
             convertView.setTag(DataArray);
         //data.tv01.setText();
         return convertView;
