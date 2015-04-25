@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AbsListView;
@@ -23,18 +24,17 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
-
 public class MainActivity extends ActionBarActivity implements AdapterView.OnItemClickListener, View.OnClickListener {
-    private final String PrenfKey = "TheKeyGetPrenfKey";
     ArrayList<DATA> list ,list2;
+    ArrayList<PackData> Packlist;
+    ArrayList<String> list2_id;
     SwipeRefreshLayout swipeRefreshLayout;
     LinkedHashMap<String,DATA> HashLink ;
-    SharedPreferences preferences;
     Button btnC;
     ListView LV;
     ListView LV2;
     TextView textMsg;
-    JSONArray JA;
+    JSONArray MenuJA , PackJA;
     JSONObject JO;
     Context context;
     @Override
@@ -42,17 +42,14 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        preferences = getSharedPreferences(PrenfKey,0);
-
         context = getApplication();
 
-        list = new ArrayList<DATA>();
+        list = new ArrayList<>();
 
         findObjet();
 
-        getListV();
+        getData();
 
-        textMsg.setText(preferences.getString("id", "").toString());
         btnC.setOnClickListener(this);
         AbsListView.OnScrollListener onListScroll = new scorLive(swipeRefreshLayout);
 
@@ -64,15 +61,14 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                     @Override
                     public void run() {
                         swipeRefreshLayout.setRefreshing(false);
-                        list = new ArrayList<DATA>();
+                        list = new ArrayList<>();
                         list.add(new DATA("JASON","Sentyr","UniWilSon"));
                         getListV();
                         Toast.makeText(getApplicationContext(), "Refresh done!", Toast.LENGTH_SHORT).show();
-                    }
+                }
                 }, 3000);
             }
         };
-
         LV.setOnScrollListener(onListScroll);
 
         LV.setOnItemClickListener(this);
@@ -88,80 +84,187 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     private void getListV() {
         try
         {
-            HashLink = new LinkedHashMap<String,DATA>();
+            HashLink = new LinkedHashMap<>();
 
-            JA = new NetWork().execute("http://123.110.60.133:8081/api/set/setmenu").get();
-
-            int length = JA.length();
+            int length = MenuJA.length();
             for (int i = 0; i < length; i++)
             {
-                JO = JA.getJSONObject(i);
+                JO = MenuJA.getJSONObject(i);
 
-                //DATA Data = new DATA(JO.getString("id"), JO.getString("item"), JO.getString("price"));
+                DATA Data = new DATA(JO.getString("Id"), JO.getString("Name"), JO.getString("Price"));
 
-                JO = JO.getJSONObject("detail");
-
-//                list.add(Data);
-//                if(Data.id.contains("Set"))
-//                    HashLink.put(Data.id.substring(3),Data);
+                list.add(Data);
+                if(Data.id.contains("Set"))
+                    HashLink.put(Data.id.substring(3),Data);
             }
         }
         catch (JSONException e) {e.printStackTrace();}
-        catch (InterruptedException e) {e.printStackTrace();}
-        catch (ExecutionException e) {e.printStackTrace();}
 
         AdtBase AdtBase = new AdtBase(context, list);
 
+        getSet();
+
         LV.setAdapter(AdtBase);
     }
+    private void getSet() {
+        try
+        {
+            Packlist = new ArrayList<>();
+
+            JSONObject JOPcak;
+
+            int Length = PackJA.length();
+
+            for(int i = 0 ; i< Length ; i++)
+            {
+                JOPcak = PackJA.getJSONObject(i);
+
+                Packlist.add(new PackData(JOPcak.getString("Id") , JOPcak.getJSONArray("Detail")));
+            }
+        }
+        catch (JSONException e) {e.printStackTrace();}
+
+    }
+    private PackData checkSet()
+    {
+        boolean bol =false;
+        boolean bol2 = false;
+        for (int i = 0; i < Packlist.size(); i++) {
+            bol = false;
+            bol2 = false;
+            String[] PName = Packlist.get(i).getStructName();
+            Integer[] PNum = Packlist.get(i).getStructNum();
+
+                    for (DATA data : list2) {
+                        if(data.item==PName[0])
+                        {
+                            if(data.count==PNum[0])
+                            {
+                                bol = true;
+                            }
+                        }
+                        if(data.item==PName[1])
+                        {
+                            if(data.count==PNum[1])
+                            {
+                                bol2 = true;
+                            }
+                        }
+                    }
+            if(bol || bol2)
+            {
+                return Packlist.get(i);
+            }
+      }
+        return null;
+    }
+
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         DATA NowData =new DATA(null ,null ,null);
         LinkedHashMap<String,Integer> hsInt = new LinkedHashMap();
         NowData.setData((DATA) parent.getItemAtPosition(position));
-
-        //if(NowData.id.substring(0,1).equals("D"))
-
-        if(NowData.id.substring(0,1).equals("F"))
-            NowData = openOptionsDialog(NowData);
-
         listChang(NowData);
-
-        preferences.edit().putString(textMsg.getText().toString() , "id" ).commit();
+        //openOptionsDialog(NowData) /**裡頭包含著 改變已點項目的方法**/;
     }
 
-    private DATA openOptionsDialog(final DATA data) {
+    private void openOptionsDialog(final DATA data) {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        if (data.id.substring(0, 1).equals("F")) {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
-        dialog.setTitle("Do You Want to get the Pack of food ?");
+            dialog.setTitle("Do You Want to get the Pack of food ?");
 
-        dialog.setMessage(data.item + "have a packSet !");
+            dialog.setMessage(data.item + "have a packSet !");
 
-        final String str = data.item.substring(2);
-        dialog.setPositiveButton("確認", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if(HashLink.get(data.id.substring(2)) != null)
-                data.setData(HashLink.get(data.id.substring(2)));
-                listChang(data);
-            }});
-        dialog.setNegativeButton("取消", new DialogInterface.OnClickListener()
-        {public void onClick( DialogInterface dialoginterface, int i){
-                listChang(data);
-            }});
-        dialog.show();
-
-        return data;
+            final String str = data.item.substring(2);
+            dialog.setPositiveButton("確認", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (HashLink.get(data.id.substring(2)) != null)
+                        data.setData(HashLink.get(data.id.substring(2)));
+                        listChang(data);
+                }
+            });
+            dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialoginterface, int i) {
+                    listChang(data);
+                }
+            });
+            dialog.show();
+        }
+        else
+        listChang(data);
     }
-private void listChang(DATA data)
-{
-    list2.add(data);
+    private void listChang(DATA data)
+    {
+        //list2_id.add(data.id);
 
-    textMsg.append("\n\t"+data.item);
+        for (int i = 0; i < list2.size(); i++) {
+            if(list2.get(i).getId().equals(data.getId())) {
+                list2.get(i).addCount();
+                list2.get(i).setNum();
+            }
+        }
+        list2.add(data);
+        textMsg.append("\n\t" + data.item);
 
-    LV2.setAdapter(new AdtBase(context , list2));
-}
+        PackData Pdata = checkSet();
+
+        //list2.add(Pdata);
+
+        LV2.setAdapter(new AdtBase(context, list2));
+
+//
+//        for(int i = list2.size(); i < 0 ; i--) {
+//            for (int j =  list2.size() ; j < 0; j--) {
+//                if(list2.get(j-1) != null) {
+//                    if (list2.get(i).getId().equals(list2.get(j - 1).getId())) {
+//                        list2.get(i).addCount();
+//                    }else {
+//                        list3.add(list2.get(i));
+//                        i = j;
+//                    }
+//                }
+//            }
+//        }
+//        for(int p = list2.size(); p < 0 ; ){
+//            if(list2.size() > 0)
+//            for(int i = list2.size() ; i < 0 ; ) {
+//                if(list2.get(p).getId().equals(list2.get(i).getId()))
+//                {
+//                    --list.get(p).count;
+//                    list2.remove(i);
+//                    --i;
+//                }
+//                else
+//                {
+//                    if(list.get(i) != null)
+//                    list.get(i).setNum();
+//                    --p;
+//                    --i;
+//                }
+//            }
+//        }
+    }
+    private void getData() {
+
+        try
+        {
+            PackJA = new NetWork().execute("http://123.110.60.133:8081/api/set/setmenu").get();
+
+            MenuJA = new NetWork().execute("http://123.110.60.133:8081/api/my/mydata").get();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+            Log.e("h94u04","Internet Not Open Now !!! ");}
+        catch (ExecutionException e) {e.printStackTrace();}
+        finally {
+            getListV();
+        }
+
+    }
     private void findObjet() {
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swip);
 
@@ -175,7 +278,6 @@ private void listChang(DATA data)
 
         list2 = new ArrayList<>();
     }
-
     @Override
     public void onClick(View v) {
         for (int i = 0 ; i <list2.size() ; i++)
