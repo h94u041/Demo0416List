@@ -8,16 +8,11 @@ public class DATA {
     int count = 0;
     int position;
 
-    DATA(String id, String item, String price) {
+    DATA getDATA(String id, String item, String price) {
         this.id = id;
         this.item = item;
         this.price = price;
-    }
-
-    DATA(DATA data) {
-        this.id = data.id;
-        this.item = data.item;
-        this.price = data.price;
+        return this;
     }
 
     void setData(DATA data) {
@@ -28,16 +23,18 @@ public class DATA {
         this.item = data.item;
         this.price = data.price;
     }
-
     String getId() {
         return id;
     }
+    Integer getCount()
+    {
+        return count ;
+    }
+    void subCount(Integer i){this.count = count - i;}
     void addCount()
     {
-        ++count;
+        this.count=count+1;
     }
-    void setNum()
-    {
-        price = count+"";
-    }
+    String getName(){return id;}
+
 }

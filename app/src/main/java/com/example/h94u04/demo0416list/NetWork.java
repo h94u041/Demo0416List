@@ -31,7 +31,6 @@ public class NetWork extends AsyncTask<String,Void ,JSONArray>
             String str = EntityUtils.toString(res.getEntity(), "UTF-8");
 
             ja = new JSONArray(str);
-
         }
         catch (IOException e) {e.printStackTrace();}
         catch (JSONException e) {e.printStackTrace();}
