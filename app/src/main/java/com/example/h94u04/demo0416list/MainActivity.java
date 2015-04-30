@@ -167,15 +167,17 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                 }
             }
         }
+        int price = 0;
         for(DATA data : HashLink.values())
         {
             if(!data.getCount().equals(0))
             {
                 list2.add( data );
+                price = price + Integer.parseInt(data.price)*data.count ;
             }
         }
         LV2.setAdapter(new AdtPackBase(this , list2) );
-
+        textMsg.setText("All of them  : "+price);
         //openOptionsDialog(NowData) /**裡頭包含著 改變已點項目的方法**/;
     }
     private void openOptionsDialog(final DATA data) {
